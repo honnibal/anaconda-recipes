@@ -1,32 +1,45 @@
+{% set name = "murmurhash" %}
+{% set version = "0.26.4" %}
+{% set sha256sum = "869897c7c617aa94728a89edef5ae496180e85670f3c918dfc59c164912c1b66" %}
+
 package:
-  name: murmurhash
-  version: 0.26.4
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  fn: murmurhash-0.26.4.tar.gz
-  url: https://pypi.python.org/packages/ff/53/1f428861e59c2382e22b8839d03cc315e1a7633a827497b3d389b8d8772d/murmurhash-0.26.4.tar.gz
-  md5: b5eb24ec4f9225566855e268da8421f5
+  fn: {{ name }}-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: {{ sha256sum }}
 
 build:
-  detect_binary_files_with_prefix: False
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  skip: True  # [win32 or linux32]
+  features:
+    - vc9   # [win and py27]
+    - vc10  # [win and py34]
+    - vc14  # [win and py>34]
 
 requirements:
   build:
+    - toolchain
+    - msinttypes  # [win and py<35]
     - python
+    - setuptools
+
   run:
     - python
 
 test:
-  imports:
-    - murmurhash
-    - murmurhash.mrmr
+  requires:
+    - pytest
 
 about:
-  home: https://github.com/aappleby/smhasher
+  home: https://github.com/explosion/murmurhash/
   license: MIT
   license_file: LICENSE
-  summary: A non-cryptographic hash function
-  description: |
-    MurmurHash is a non-cryptographic hash function suitable for general
-    hash-based lookup.
-  dev_url: https://github.com/aappleby/smhasher
+  summary: Cython bindings for MurmurHash2
+
+extra:
+  recipe-maintainers:
+    - honnibal
