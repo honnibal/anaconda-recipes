@@ -1,35 +1,50 @@
+{% set name = "preshed" %}
+{% set version = "1.0.0" %}
+{% set sha256sum = "a6b3a9e34634600e3e410ec25e0debed4b65a47eb37514a063d189d1c425b4dd" %}
+
 package:
-  name: preshed
-  version: 0.46.4
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  fn: preshed-0.46.4.tar.gz
-  url: https://pypi.python.org/packages/ed/f8/96cdfd0badba82b589f5913565e67a0db4d93282a86e0cb2dd786fdd69be/preshed-0.46.4.tar.gz
-  md5: 1044e5cf3460fe6a813f0606059ea92d
+  fn: {{ name }}-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: {{ sha256sum }}
 
 build:
-  detect_binary_files_with_prefix: False
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  skip: True  # [win32 or linux32]
+  features:
+    - vc9   # [win and py27]
+    - vc10  # [win and py34]
+    - vc14  # [win and py>34]
 
 requirements:
   build:
+    - toolchain
+    - msinttypes  # [win and py<35]
     - python
+    - setuptools
+    - cymem >=1.30,<1.32
+
   run:
     - python
-    - cymem >=1.30,<1.32.0
+    - cymem >=1.30,<1.32
 
 test:
-  imports:
-    - preshed
-    - preshed.counter
-    - preshed.maps
+  requires:
+    - pytest
 
 about:
-  home: https://github.com/syllog1sm/preshed
+  home: https://github.com/explosion/preshed
   license: MIT
   license_file: LICENSE
-  summary: Cython hash table that trusts the keys are pre-hashed
+  summary: Cython Hash Table for Pre-Hashed Keys
   description: |
     Simple but high performance Cython hash table mapping pre-randomized keys
     to void* values.
-  doc_url: https://pypi.python.org/pypi/preshed
-  dev_url: https://github.com/spacy-io/preshed
+
+extra:
+  recipe-maintainers:
+    - honnibal
