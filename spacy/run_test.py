@@ -1,28 +1,7 @@
-import spacy.attrs
-import spacy.cfile
-import spacy.gold
-import spacy.lexeme
-import spacy.matcher
-import spacy.morphology
-import spacy.orth
-import spacy.parts_of_speech
-import spacy.serialize.bits
-import spacy.serialize.huffman
-import spacy.serialize.packer
-import spacy.strings
-import spacy.symbols
-import spacy.syntax._parse_features
-import spacy.syntax._state
-import spacy.syntax.arc_eager
-import spacy.syntax.iterators
-import spacy.syntax.ner
-import spacy.syntax.nonproj
-import spacy.syntax.parser
-import spacy.syntax.stateclass
-import spacy.syntax.transition_system
-import spacy.tagger
-import spacy.tokenizer
-import spacy.tokens.doc
-import spacy.tokens.span
-import spacy.tokens.token
-import spacy.vocab
+import os
+import sys
+import pytest
+import spacy
+
+PACKAGE_DIR = os.path.abspath(os.path.dirname((spacy.__file__)))
+sys.exit(pytest.main([PACKAGE_DIR]))
