@@ -1,36 +1,75 @@
+{% set name = "thinc" %}
+{% set version = "6.5.2" %}
+{% set sha256sum = "e409b444a4a03b38dbca62b85bef917cec7261d3069e93924b843a851d3ed368" %}
+
 package:
-  name: thinc
-  version: 5.0.8
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  fn: thinc-5.0.8.tar.gz
-  url: https://pypi.python.org/packages/d3/1e/15cdaf6b7e93f1b6d1b008960520ede5efe31f843c45feff31700c625c8f/thinc-5.0.8.tar.gz
-  md5: df1a9231b7849336496a91afb56aff26
+  fn: {{ name }}-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: {{ sha256sum }}
+  patches:
+    - patches/0001-Fix-integer-check.patch
 
 build:
-  detect_binary_files_with_prefix: False
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  skip: True  # [not x86_64]
+  features:
+    - vc9   # [win and py27]
+    - vc14  # [win and py>=35]
 
 requirements:
   build:
+    - toolchain   # [unix]
+    - msinttypes  # [win and py27]
     - python
-    - cython
+    - setuptools
+    - numpy x.x
+    - numpy >=1.7
+
   run:
     - python
-    - numpy
+    - numpy x.x
+    - numpy >=1.7
     - murmurhash >=0.26,<0.27
     - cymem >=1.30,<1.32
-    - preshed >=0.46,<0.47
+    - preshed >=1.0.0,<2.0.0
+    - tqdm >=4.10.0,<5.0.0
+    - cytoolz >=0.8,<0.9
+    - plac >=0.9.6,<1.0.0
+    - six >=1.10.0,<2.0.0
+    - wrapt
+    - dill
+    - termcolor
+    - pathlib >=1.0.0,<2.0.0  # [py27]
 
 test:
+  requires:
+    - hypothesis
+    - pytest
+    - mock
+
   imports:
     - thinc
+    - thinc.api
+    - thinc.linear
+    - thinc.extra
+    - thinc.neural
 
 about:
-  home: http://github.com/syllog1sm/thinc
+  home: https://github.com/explosion/thinc/
   license: MIT
   license_file: LICENSE
-  summary: super sparse multi-class machine learning
+  summary: 'thinc: Learn super-sparse multi-class models'
   description: |
     thinc is a Cython library for learning models with millions of parameters
-    and dozens of classes.
-  dev_url: https://github.com/syllog1sm/thinc
+    and dozens of classes. It drives https://spacy.io , a pipeline of very
+    efficient NLP components. I’ve only used thinc from Cython; no real Python
+    API is currently available.
+
+extra:
+  recipe-maintainers:
+    - honnibal

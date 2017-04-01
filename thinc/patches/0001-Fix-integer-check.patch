@@ -1,0 +1,100 @@
+From 54fee7573cff53775fd739e04ed6ab941a5b4af6 Mon Sep 17 00:00:00 2001
+From: Rolando Espinoza <rndmax84@gmail.com>
+Date: Mon, 20 Mar 2017 20:12:41 -0300
+Subject: [PATCH] Fix integer check.
+
+This mainly address Python 2.7's Windows interpreter where `numpy`'s
+`shapre` returns `long` values and hence `isinstance(shape[i], long)`
+returns `False`.
+---
+ thinc/check.py       | 7 ++++---
+ thinc/extra/eg.pyx   | 5 ++++-
+ thinc/neural/ops.pyx | 3 ++-
+ 3 files changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/thinc/check.py b/thinc/check.py
+index 9f29029..d274403 100644
+--- a/thinc/check.py
++++ b/thinc/check.py
+@@ -3,6 +3,7 @@ import inspect
+ import wrapt
+ from cytoolz import curry
+ from numpy import ndarray
++from six import integer_types
+ 
+ from .exceptions import UndefinedOperatorError, DifferentLengthError
+ from .exceptions import ExpectedTypeError, ShapeMismatchError
+@@ -55,7 +56,7 @@ def has_shape(shape, arg_id, args, kwargs):
+         raise ExpectedTypeError(arg, ['array'])
+     shape_values = []
+     for dim in shape:
+-        if not isinstance(dim, int):
++        if not isinstance(dim, integer_types):
+             dim = getattr(self, dim, None)
+         shape_values.append(dim)
+     if len(shape) != len(arg.shape):
+@@ -71,7 +72,7 @@ def is_shape(arg_id, args, func_kwargs, **kwargs):
+     if not isinstance(arg, Iterable):
+         raise ExpectedTypeError(arg, ['iterable'])
+     for value in arg:
+-        if not isinstance(value, int) or value < 0:
++        if not isinstance(value, integer_types) or value < 0:
+             raise ExpectedTypeError(arg, ['valid shape (positive ints)'])
+ 
+ 
+@@ -93,7 +94,7 @@ def is_float(arg_id, args, func_kwargs, **kwargs):
+ 
+ def is_int(arg_id, args, func_kwargs, **kwargs):
+     arg = args[arg_id]
+-    if not isinstance(arg, int):
++    if not isinstance(arg, integer_types):
+         raise ExpectedTypeError(arg, ['int'])
+     if 'min' in kwargs and arg < kwargs['min']:
+         raise OutsideRangeError(arg, kwargs['min'], '>=')
+diff --git a/thinc/extra/eg.pyx b/thinc/extra/eg.pyx
+index e0ab6a6..e4424ff 100644
+--- a/thinc/extra/eg.pyx
++++ b/thinc/extra/eg.pyx
+@@ -1,6 +1,9 @@
+ # cython: infer_types=True
+ cimport cython
+ 
++from six import integer_types
++
++
+ cdef ExampleC init_eg(Pool mem, int nr_class=0, int nr_atom=0, int nr_feat=0, widths=None):
+     if widths is None:
+         widths = [nr_class]
+@@ -68,7 +71,7 @@ cdef class Example:
+                 feats_dict = features
+                 features = []
+                 for key, value in feats_dict.items():
+-                    if isinstance(key, int):
++                    if isinstance(key, integer_types):
+                         slot = 0
+                     else:
+                         slot, key = key
+diff --git a/thinc/neural/ops.pyx b/thinc/neural/ops.pyx
+index 79fca51..055598c 100644
+--- a/thinc/neural/ops.pyx
++++ b/thinc/neural/ops.pyx
+@@ -21,6 +21,7 @@ cimport numpy as np
+ from ..typedefs cimport weight_t
+ from ..linalg cimport Mat, MatMat, MatVec, VecVec, Vec, sqrt
+ from murmurhash.mrmr cimport hash64
++from six import integer_types
+ 
+ 
+ try:
+@@ -115,7 +116,7 @@ class Ops(object):
+         return self.asarray((coinflips >= drop) / (1.-drop), dtype='float32')
+ 
+     def allocate(self, shape, dtype='float32'):
+-        if isinstance(shape, int):
++        if isinstance(shape, integer_types):
+             shape = (shape,)
+         nr_weight = numpy.prod(shape)
+         return self.xp.zeros(shape, dtype=dtype)
+-- 
+2.6.2
+
