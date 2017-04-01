@@ -1,34 +1,48 @@
+{% set name = "cymem" %}
+{% set version = "1.31.2" %}
+{% set sha256sum = "f06d9b50da0474d7405674d8101c319d89a17d33792d6d429fe3d5c64f0d9df1" %}
+
 package:
-  name: cymem
-  version: 1.31.2
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  fn: cymem-1.31.2.tar.gz
-  url: https://pypi.python.org/packages/f8/9e/273fbea507de99166c11cd0cb3fde1ac01b5bc724d9a407a2f927ede91a1/cymem-1.31.2.tar.gz
-  md5: 310e54a8408a25775cd3d58c9379518f
+  fn: {{ name }}-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: {{ sha256sum }}
 
 build:
-  detect_binary_files_with_prefix: False
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  skip: True  # [win32 or linux32]
+  features:
+    - vc9   # [win and py27]
+    - vc10  # [win and py34]
+    - vc14  # [win and py>34]
 
 requirements:
   build:
+    - toolchain
     - python
+    - setuptools
+
   run:
     - python
 
 test:
-  imports:
-    - cymem
-    - cymem.cymem
+  requires:
+    - pytest
 
 about:
-  home: http://github.com/syllog1sm/cymem
+  home: https://github.com/explosion/cymem
   license: MIT
   license_file: LICENSE
-  summary: Manage calls to malloc/free through Cython
+  summary: Manage calls to calloc/free through Cython
   description: |
-    Cymem provides two small memory-management helpers for Cython. They make it
-    easy to tie memory to a Python object's life-cycle, so that the memory is
+    cymem provides two small memory-management helpers for Cython. They make it
+    easy to tie memory to a Python object’s life-cycle, so that the memory is
     freed when the object is garbage collected.
-  doc_url: https://pypi.python.org/pypi/cymem
-  dev_url: http://github.com/syllog1sm/cymem
+
+extra:
+  recipe-maintainers:
+    - honnibal
